@@ -1219,6 +1219,17 @@ std::string TypeVariableTypeAnnotation::ToString() const {
                       type_variable_->ToString());
 }
 
+bool TypeVariableTypeAnnotation::IsGeneric() const {
+  if (type_variable()->GetDefiner() == nullptr) {
+    return false;
+  }
+  if (type_variable()->GetDefiner()->kind() != AstNodeKind::kTypeAnnotation) {
+    return false;
+  }
+  return absl::down_cast<const TypeAnnotation*>(type_variable()->GetDefiner())
+      ->IsAnnotation<GenericTypeAnnotation>();
+}
+
 // -- class MemberTypeAnnotation
 
 MemberTypeAnnotation::MemberTypeAnnotation(Module* owner, Span span,
@@ -1350,10 +1361,13 @@ std::vector<AstNode*> ArrayTypeAnnotation::GetChildren(bool want_types) const {
 }
 
 std::string ArrayTypeAnnotation::ToString() const {
-  return dim_is_min_ ? absl::StrFormat("%s[>= %s]", element_type_->ToString(),
-                                       dim_->ToString())
-                     : absl::StrFormat("%s[%s]", element_type_->ToString(),
-                                       dim_->ToString());
+  std::string dim_str =
+      dim_->kind() == AstNodeKind::kNumber
+          ? absl::down_cast<const Number*>(dim_)->ToStringNoType()
+          : dim_->ToString();
+  return dim_is_min_
+             ? absl::StrFormat("%s[>= %s]", element_type_->ToString(), dim_str)
+             : absl::StrFormat("%s[%s]", element_type_->ToString(), dim_str);
 }
 
 // -- class SelfTypeAnnotation
@@ -2910,7 +2924,11 @@ std::string ChannelTypeAnnotation::ToString() const {
   std::vector<std::string> dims;
   if (dims_.has_value()) {
     for (const Expr* dim : dims_.value()) {
-      dims.push_back(absl::StrCat("[", dim->ToString(), "]"));
+      std::string dim_str =
+          dim->kind() == AstNodeKind::kNumber
+              ? absl::down_cast<const Number*>(dim)->ToStringNoType()
+              : dim->ToString();
+      dims.push_back(absl::StrCat("[", dim_str, "]"));
     }
   }
   return absl::StrFormat("chan<%s>%s %s", payload_->ToString(),
