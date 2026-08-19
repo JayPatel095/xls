@@ -99,7 +99,7 @@ TEST_F(AstGeneratorTest, BitsTypeGetMetadata) {
 
   TypeAnnotation* xn_true_128 =
       g_.MakeTypeAnnotation(/*is_signed=*/true, 128, /*use_xn=*/true);
-  EXPECT_EQ(xn_true_128->ToString(), "xN[bool:0x1][128]");
+  EXPECT_EQ(xn_true_128->ToString(), "xN[0x1][128]");
   XLS_ASSERT_OK_AND_ASSIGN(bit_count, g_.BitsTypeGetBitCount(xn_true_128));
   EXPECT_EQ(bit_count, 128);
   XLS_ASSERT_OK_AND_ASSIGN(is_signed, g_.BitsTypeIsSigned(xn_true_128));
