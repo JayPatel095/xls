@@ -677,6 +677,44 @@ impl MyProc<X, Y> {
 )");
 }
 
+TEST_F(LegacyProcConverterTest, ParametricProcWithManyParametrics) {
+  DoLegacyProcConversionFmt(
+      R"(proc MyProc<A: u32, B: u32, C: u32, D: u32, E: u32> {
+    s: chan<u32> out;
+    config(s: chan<u32> out) {
+        (s,)
+    }
+    init {
+        u32:0
+    }
+    next(state: u32) {
+        send(join(), s, state + A + B + C + D + E);
+        state + 1
+    }
+}
+)",
+      R"(#![feature(explicit_state_access)]
+#![feature(generics)]
+
+proc MyProc<A: u32, B: u32, C: u32, D: u32, E: u32> {
+    s: chan<u32> out,
+    state: u32,
+}
+
+impl MyProc<A, B, C, D, E> {
+    fn new(s: chan<u32> out) -> Self {
+        MyProc { s, state: u32:0 }
+    }
+
+    fn next(self) {
+        let state = read(self.state);
+        send(join(), self.s, state + A + B + C + D + E);
+        write(self.state, state + 1);
+    }
+}
+)");
+}
+
 TEST_F(LegacyProcConverterTest, TestProc) {
   DoLegacyProcConversionFmt(
       R"(proc Producer {

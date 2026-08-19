@@ -436,11 +436,11 @@ class LegacyProcConverter : public Formatter {
               FormatTypeAnnotation(*std::get<TypeAnnotation*>(et)));
         }
       }
-      pieces.push_back(ConcatNGroup(
-          arena_, {arena_.oangle(),
-                   FormatJoin(parametric_docs, Joiner::kCommaBreak1,
-                              /*group=*/false),
-                   arena_.cangle()}));
+      pieces.push_back(
+          ConcatNGroup(arena_, {arena_.oangle(),
+                                FormatJoin(parametric_docs, Joiner::kCommaSpace,
+                                           /*group=*/false),
+                                arena_.cangle()}));
     }
 
     pieces.push_back(arena_.MakeText("::new"));
@@ -1121,7 +1121,7 @@ class LegacyProcConverter : public Formatter {
       }
       impl_target = ConcatNGroup(
           arena_, {impl_target, arena_.oangle(),
-                   FormatJoin(parametric_names, Joiner::kCommaBreak1,
+                   FormatJoin(parametric_names, Joiner::kCommaSpace,
                               /*group=*/false),
                    arena_.cangle()});
     }
